@@ -644,6 +644,20 @@ ol li::before {
   font-size: clamp(2rem, 5vw, 5rem);
 }
 
+#loading_page {
+  display: grid;
+  gap: 1rem;
+  place-content: center;
+  place-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background-color: rgba(var(--foreground-color), 1);
+}
+
 #main_header {
   padding: 1.5rem max(1rem, 4vw);
 }
@@ -764,12 +778,10 @@ ol li::before {
   background-color: transparent;
   border: thin solid rgba(var(--text-color), 0.3);
   text-align: left;
+  flex-shrink: 1;
 }
 .primary-action .icon {
   fill: var(--accent-color);
-}
-.primary-action:not(:last-of-type) {
-  margin-right: 0.5rem;
 }
 
 #flo_id_warning {

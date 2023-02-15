@@ -28,6 +28,10 @@
             <button class="button button--primary submit-btn">OK</button>
         </div>
     </sm-popup>
+    <article id="loading_page">
+        <sm-spinner></sm-spinner>
+        <strong>Getting BTC Web wallet ready</strong>
+    </article>
     <div id="main_card">
         <header id="main_header" class="flex align-center space-between">
             <div class="flex align-center">
@@ -46,7 +50,7 @@
         </header>
         <main id="pages_container" class="grid">
             <div id="check_details" class="page hidden">
-                <section class="flex margin-bottom-1-5">
+                <section class="flex gap-0-5 margin-bottom-1-5">
                     <button id="gen_new_addr_btn" class="button primary-action interact">
                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                             height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
@@ -676,7 +680,7 @@
             if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
             return M.join(' ');
         }
-        window.addEventListener('hashchange', e => showPage(window.location.hash))
+        window.addEventListener('hashchange', e => routeTo(window.location.hash))
         let selectedCurrency
         window.addEventListener("load", () => {
             const [browserName, browserVersion] = detectBrowser().split(' ');
@@ -707,10 +711,30 @@
                     createRipple(e, e.target.closest("button, .interactive"));
                 }
             });
-            showPage(window.location.hash)
-            getExchangeRate().catch(e => {
-                console.error(e)
-            })
+            getExchangeRate()
+                .then(() => {
+                    routeTo(window.location.hash)
+                    setTimeout(() => {
+                        getRef('loading_page').animate([
+                            {
+                                transform: 'translateY(0)',
+                            },
+                            {
+                                transform: 'translateY(-100%)',
+                            }
+                        ], {
+                            duration: 300,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('loading_page').remove()
+                        }
+                    }, 500);
+                })
+                .catch(e => {
+                    console.error(e)
+                    notify('Error fetching exchange rate', 'error')
+                })
             selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc'
             getRef('currency_selector').value = selectedCurrency
             getRef('add_sender').click();
@@ -755,7 +779,7 @@
         }
 
         let tempData
-        async function showPage(targetPage, options = {}) {
+        async function routeTo(targetPage, options = {}) {
             const { firstLoad, hashChange, isPreview } = options
             let pageId
             let params = {}
@@ -764,17 +788,9 @@
                 pageId = 'check_details'
             } else {
                 if (targetPage.includes('/')) {
-                    if (targetPage.includes('?')) {
-                        const splitAddress = targetPage.split('?')
-                        searchParams = splitAddress.pop()
-                        const pages = splitAddress.pop().split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    } else {
-                        const pages = targetPage.split('/')
-                        pageId = pages[1]
-                        subPageId = pages[2]
-                    }
+                    let path;
+                    [path, searchParams] = targetPage.split('?');
+                    [, pageId, subPageId1] = path.split('/')
                 } else {
                     pageId = targetPage
                 }
