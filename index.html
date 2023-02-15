@@ -708,6 +708,9 @@
                 }
             });
             showPage(window.location.hash)
+            getExchangeRate().catch(e => {
+                console.error(e)
+            })
             selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc'
             getRef('currency_selector').value = selectedCurrency
             getRef('add_sender').click();
@@ -790,11 +793,6 @@
                             getRef('search_query_input').value = params.query;
                         render.queryResult(params.query)
                     }
-                    break;
-                case 'send':
-                    getExchangeRate().catch(e => {
-                        console.error(e)
-                    })
                     break;
             }
             const animOptions = {
