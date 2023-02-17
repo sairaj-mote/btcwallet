@@ -1375,8 +1375,6 @@
         });
         function retrieveBtcAddr() {
             let wif = getRef('retrieve_btc_addr_field').value.trim();
-            // addressForm['legacy'].value = btcOperator.address(wif);
-            // addressForm['segwit'].value = btcOperator.segwitAddress(wif);
             getRef('recovered_btc_addr_wrapper').classList.remove('hidden')
             getRef('recovered_btc_addr').value = btcOperator.bech32Address(wif);
         }
@@ -1553,14 +1551,20 @@
         }
         function calculateApproxFee() {
             return new Promise((resolve, reject) => {
-                fetch('https://bitcoiner.live/api/fees/estimates/latest').then(res => res.json()).then(data => {
-                    const satPerByte = data.estimates['60'].sat_per_vbyte;
-                    const legacyBytes = 200;
-                    const segwitBytes = 77;
-                    resolve((legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8));
-                }).catch(e => {
-                    reject(e)
-                })
+                fetch('https://bitcoiner.live/api/fees/estimates/latest')
+                    .then(res => {
+                        res.json()
+                            .then(data => {
+                                const satPerByte = data.estimates['60'].sat_per_vbyte;
+                                const legacyBytes = 200;
+                                const segwitBytes = 77;
+                                resolve((legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8));
+                            }).catch(e => {
+                                reject(e)
+                            })
+                    }).catch(e => {
+                        reject(e)
+                    })
             })
         }
         function calculateExactFee() {
